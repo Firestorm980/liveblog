@@ -70,8 +70,8 @@ class WPCOM_Liveblog_Entry_Embed extends WP_Embed {
 		$handlers = $this->handlers;
 		//check for handlers registered for wp_embed class using all the helper functions
 		if ( true === isset( $GLOBALS['wp_embed'] )
-			 && is_a( $GLOBALS['wp_embed'], 'WP_Embed' )
-			 && is_array( $GLOBALS['wp_embed']->handlers )
+			&& is_a( $GLOBALS['wp_embed'], 'WP_Embed' )
+			&& is_array( $GLOBALS['wp_embed']->handlers )
 		) {
 			//marge those in a single array
 			$handlers = array_replace_recursive( $GLOBALS['wp_embed']->handlers, $this->handlers );
@@ -80,7 +80,8 @@ class WPCOM_Liveblog_Entry_Embed extends WP_Embed {
 		foreach ( $handlers as $priority => $handlers ) {
 			foreach ( $handlers as $id => $handler ) {
 				if ( preg_match( $handler['regex'], $url, $matches ) && is_callable( $handler['callback'] ) ) {
-					if ( false !== $return = call_user_func( $handler['callback'], $matches, $attr, $url, $rawattr ) ) {
+					$return = call_user_func( $handler['callback'], $matches, $attr, $url, $rawattr );
+					if ( false !== $return ) {
 						/**
 						 * Filter the returned embed handler.
 						 *
@@ -105,7 +106,7 @@ class WPCOM_Liveblog_Entry_Embed extends WP_Embed {
 		if ( $comment_id ) {
 
 			// Check for a cached result (stored in the comment meta)
-			$key_suffix    = md5( $url . serialize( $attr ) );
+			$key_suffix    = md5( $url . wp_json_encode( $attr ) );
 			$cachekey      = '_oembed_' . $key_suffix;
 			$cachekey_time = '_oembed_time_' . $key_suffix;
 
@@ -220,7 +221,7 @@ class WPCOM_Liveblog_Entry_Embed extends WP_Embed {
 		if ( ! is_array( $comment_metas ) ) {
 			return;
 		}
-		$comment_meta_keys = array_keys( $comment_metas )
+		$comment_meta_keys = array_keys( $comment_metas );
 		if ( ! $comment_meta_keys ) {
 			return;
 		}

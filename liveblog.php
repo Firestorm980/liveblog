@@ -569,11 +569,11 @@ if ( ! class_exists( 'WPCOM_Liveblog' ) ) :
 
 			$crud_action = isset( $_POST['crud_action'] ) ? sanitize_text_field( wp_unslash( $_POST['crud_action'] ) ) : 0; // input var ok
 
-			$args['post_id']         = isset( $_POST['post_id'] ) ? intval( $_POST['post_id'] ) : 0;
-			$args['content']         = isset( $_POST['content'] ) ? $_POST['content'] : '';
-			$args['entry_id']        = isset( $_POST['entry_id'] ) ? intval( $_POST['entry_id'] ) : 0;
-			$args['author_id']       = isset( $_POST['author_id'] ) ? intval( $_POST['author_id'] ) : false;
-			$args['contributor_ids'] = isset( $_POST['contributor_ids'] ) ? intval( $_POST['contributor_ids'] ) : false;
+			$args['post_id']         = isset( $_POST['post_id'] ) ? intval( $_POST['post_id'] ) : 0; // input var ok
+			$args['content']         = isset( $_POST['content'] ) ? sanitize_text_field( wp_unslash( $_POST['content'] ) ) : ''; // input var ok
+			$args['entry_id']        = isset( $_POST['entry_id'] ) ? intval( $_POST['entry_id'] ) : 0; // input var ok
+			$args['author_id']       = isset( $_POST['author_id'] ) ? intval( $_POST['author_id'] ) : false;  // input var ok
+			$args['contributor_ids'] = isset( $_POST['contributor_ids'] ) ? intval( $_POST['contributor_ids'] ) : false;  // input var ok
 
 			$args['post_id']  = isset( $_POST['post_id'] ) ? intval( $_POST['post_id'] ) : 0; // input var ok
 			$args['content']  = isset( $_POST['content'] ) ? sanitize_text_field( wp_unslash( $_POST['content'] ) ) : ''; // input var ok
@@ -806,7 +806,7 @@ if ( ! class_exists( 'WPCOM_Liveblog' ) ) :
 			//If no page is passed but entry id is, we search for the correct page.
 			if ( false === $page && false !== $id ) {
 				$index = array_search( $id, array_keys( $entries ), true );
-				$index = $index + 1;
+				$index = $index++;
 				$page  = ceil( $index / $per_page );
 			}
 
@@ -937,7 +937,7 @@ if ( ! class_exists( 'WPCOM_Liveblog' ) ) :
 				$use_rest_api = 0;
 
 				if ( self::use_rest_api() ) {
-					$endpoint_url = WPCOM_Liveblog_Rest_Api::build_endpoint_base() . $post->ID . '/' . 'post_state';
+					$endpoint_url = WPCOM_Liveblog_Rest_Api::build_endpoint_base() . $post->ID . '/post_state';
 					$use_rest_api = 1;
 				}
 
@@ -1072,7 +1072,7 @@ if ( ! class_exists( 'WPCOM_Liveblog' ) ) :
 			$settings = array(
 				'defaults' => $defaults,
 				'browser'  => array(
-					'mobile'    => wp_is_mobile(),
+					'mobile'    => jetpack_is_mobile(),
 					'supported' => _device_can_upload(),
 				),
 			);
@@ -1237,6 +1237,7 @@ if ( ! class_exists( 'WPCOM_Liveblog' ) ) :
 					'value'       => 'enable',
 					'text'        => __( 'Enable', 'liveblog' ),
 					'description' => __( 'Enables liveblog on this post. Posting tools are enabled for editors, visitors get the latest updates.', 'liveblog' ),
+					// translators: 1: post url
 					'active-text' => sprintf( __( 'There is an <strong>enabled</strong> liveblog on this post. <a href="%s">Visit the liveblog &rarr;</a>', 'liveblog' ), get_permalink( $post ) ),
 					'primary'     => true,
 					'disabled'    => false,
@@ -1245,6 +1246,7 @@ if ( ! class_exists( 'WPCOM_Liveblog' ) ) :
 					'value'       => 'archive',
 					'text'        => __( 'Archive', 'liveblog' ),
 					'description' => __( 'Archives the liveblog on this post. Visitors still see the liveblog entries, but posting tools are hidden.', 'liveblog' ),
+					// translators: 1: post url
 					'active-text' => sprintf( __( 'There is an <strong>archived</strong> liveblog on this post. <a href="%s">Visit the liveblog archive &rarr;</a>', 'liveblog' ), get_permalink( $post ) ),
 					'primary'     => false,
 					'disabled'    => false,
@@ -1276,10 +1278,12 @@ if ( ! class_exists( 'WPCOM_Liveblog' ) ) :
 			if ( ! $meta_box ) {
 
 				if ( wp_is_post_revision( $post_id ) ) {
-					self::send_user_error( __( "The post is a revision: $post_id", 'liveblog' ) );
+					// translators: post id
+					self::send_user_error( sprintf( __( 'The post is a revision: %s', 'liveblog' ), $post_id ) );
 				}
 
-				self::send_user_error( __( "Non-existing post ID: $post_id", 'liveblog' ) );
+				// translators: post id
+				self::send_user_error( sprintf( __( 'Non-existing post ID: %s', 'liveblog' ), $post_id ) );
 
 			}
 
