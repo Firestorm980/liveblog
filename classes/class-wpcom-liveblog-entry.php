@@ -447,7 +447,7 @@ class WPCOM_Liveblog_Entry {
 			return array();
 		}
 
-		$avatar_size = apply_filters( 'liveblog_entry_avatar_size', self::default_avatar_size );
+		$avatar_size = apply_filters( 'liveblog_entry_avatar_size', self::DEFAULT_AVATAR_SIZE );
 		return array(
 			'id'     => $user->ID,
 			'key'    => strtolower( $user->user_nicename ),
