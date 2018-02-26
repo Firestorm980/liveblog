@@ -17,7 +17,7 @@ class WPCOM_Liveblog_Entry {
 	 * @var string If author editing is enabled, we stored contributors
 	 *  in this meta key.
 	 */
-	const contributors_meta_key = 'liveblog_contributors';
+	const CONTRIBUTORS_META_KEY = 'liveblog_contributors';
 
 	private $comment;
 	private $type = 'new';
@@ -408,12 +408,12 @@ class WPCOM_Liveblog_Entry {
 	 */
 	private static function add_contributors( $comment_id, $contributors ) {
 		if ( is_array( $contributors ) ) {
-			if ( metadata_exists( 'comment', $comment_id, self::contributors_meta_key ) ) {
-				update_comment_meta( $comment_id, self::contributors_meta_key, $contributors );
+			if ( metadata_exists( 'comment', $comment_id, self::CONTRIBUTORS_META_KEY ) ) {
+				update_comment_meta( $comment_id, self::CONTRIBUTORS_META_KEY, $contributors );
 				return;
 			}
 
-			add_comment_meta( $comment_id, self::contributors_meta_key, $contributors, true );
+			add_comment_meta( $comment_id, self::CONTRIBUTORS_META_KEY, $contributors, true );
 		}
 	}
 
@@ -423,7 +423,7 @@ class WPCOM_Liveblog_Entry {
 	 * @param int $comment_id The comment id to retrive the metadata.
 	 */
 	private static function get_contributors_for_json( $comment_id ) {
-		$contributors = get_comment_meta( $comment_id, self::contributors_meta_key, true );
+		$contributors = get_comment_meta( $comment_id, self::CONTRIBUTORS_META_KEY, true );
 
 		if ( ! $contributors ) {
 			return array();
