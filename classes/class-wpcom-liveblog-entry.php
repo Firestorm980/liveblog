@@ -17,7 +17,7 @@ class WPCOM_Liveblog_Entry {
 	 * @var string If author editing is enabled, we stored contributors
 	 *  in this meta key.
 	 */
-	const contributors_meta_key	= 'liveblog_contributors';
+	const contributors_meta_key = 'liveblog_contributors';
 
 	private $comment;
 	private $type = 'new';
@@ -102,22 +102,22 @@ class WPCOM_Liveblog_Entry {
 	}
 
 	public function for_json() {
-		$entry_id = $this->replaces ? $this->replaces : $this->get_id();
-		$css_classes  = implode( ' ', get_comment_class( '', $entry_id, $this->comment->comment_post_ID ) );
-		$share_link = get_permalink( $this->get_post_id() ) . '#' . $entry_id;
+		$entry_id    = $this->replaces ? $this->replaces : $this->get_id();
+		$css_classes = implode( ' ', get_comment_class( '', $entry_id, $this->comment->comment_post_ID ) );
+		$share_link  = get_permalink( $this->get_post_id() ) . '#' . $entry_id;
 
 		$entry = array(
-			'id'   			=> $entry_id,
-			'type' 			=> $this->get_type(),
-			'html' 			=> $this->render(),
-			'render' 		=> self::render_content( $this->get_content(), $this->comment ),
-			'content' 		=> apply_filters( 'liveblog_before_edit_entry', $this->get_content() ),
-			'css_classes' 	=> $css_classes,
-			'timestamp' 	=> $this->get_timestamp(),
-			'author' 		=> self::get_user_data_for_json( self::user_object_from_comment_id( $entry_id ) ),
-			'contributors' 	=> self::get_contributors_for_json( $entry_id ),
-			'entry_time' 	=> get_comment_date( 'U', $entry_id ),
-			'share_link' 	=> $share_link,
+			'id'           => $entry_id,
+			'type'         => $this->get_type(),
+			'html'         => $this->render(),
+			'render'       => self::render_content( $this->get_content(), $this->comment ),
+			'content'      => apply_filters( 'liveblog_before_edit_entry', $this->get_content() ),
+			'css_classes'  => $css_classes,
+			'timestamp'    => $this->get_timestamp(),
+			'author'       => self::get_user_data_for_json( self::user_object_from_comment_id( $entry_id ) ),
+			'contributors' => self::get_contributors_for_json( $entry_id ),
+			'entry_time'   => get_comment_date( 'U', $entry_id ),
+			'share_link'   => $share_link,
 		);
 
 		$entry = apply_filters( 'liveblog_entry_for_json', $entry, $this );
@@ -201,7 +201,6 @@ class WPCOM_Liveblog_Entry {
 			self::add_contributors( $comment->comment_ID, $args['contributor_ids'] );
 		}
 
-
 		do_action( 'liveblog_insert_entry', $comment->comment_ID, $args['post_id'] );
 		$entry = self::from_comment( $comment );
 		return $entry;
@@ -233,7 +232,7 @@ class WPCOM_Liveblog_Entry {
 			self::add_contributors( $args['entry_id'], $args['contributor_ids'] );
 		}
 
-		$args = apply_filters( 'liveblog_before_update_entry', $args );
+		$args    = apply_filters( 'liveblog_before_update_entry', $args );
 		$comment = self::insert_comment( $args );
 		if ( is_wp_error( $comment ) ) {
 			return $comment;
@@ -291,17 +290,19 @@ class WPCOM_Liveblog_Entry {
 			return $valid_args;
 		}
 
-		$new_comment_id = wp_insert_comment( array(
-			'comment_post_ID'      => $args['post_id'],
-			'comment_content'      => wp_filter_post_kses( $args['content'] ),
-			'comment_approved'     => 'liveblog',
-			'comment_type'         => 'liveblog',
-			'user_id'              => $args['user']->ID,
+		$new_comment_id = wp_insert_comment(
+			array(
+				'comment_post_ID'      => $args['post_id'],
+				'comment_content'      => wp_filter_post_kses( $args['content'] ),
+				'comment_approved'     => 'liveblog',
+				'comment_type'         => 'liveblog',
+				'user_id'              => $args['user']->ID,
 
-			'comment_author'       => $args['user']->display_name,
-			'comment_author_email' => $args['user']->user_email,
-			'comment_author_url'   => $args['user']->user_url,
-		) );
+				'comment_author'       => $args['user']->display_name,
+				'comment_author_email' => $args['user']->user_email,
+				'comment_author_url'   => $args['user']->user_url,
+			)
+		);
 
 		wp_cache_delete( 'liveblog_entries_asc_' . $args['post_id'], 'liveblog' );
 		if ( empty( $new_comment_id ) || is_wp_error( $new_comment_id ) ) {
@@ -382,13 +383,15 @@ class WPCOM_Liveblog_Entry {
 				$args['user'] = $user_object;
 
 				if ( $entry_id ) {
-					wp_update_comment( array(
-						'comment_ID'           => $entry_id,
-						'user_id'              => $args['user']->ID,
-						'comment_author'       => $args['user']->display_name,
-						'comment_author_email' => $args['user']->user_email,
-						'comment_author_url'   => $args['user']->user_url,
-					) );
+					wp_update_comment(
+						array(
+							'comment_ID'           => $entry_id,
+							'user_id'              => $args['user']->ID,
+							'comment_author'       => $args['user']->display_name,
+							'comment_author_email' => $args['user']->user_email,
+							'comment_author_url'   => $args['user']->user_url,
+						)
+					);
 				}
 			}
 		}
@@ -426,9 +429,11 @@ class WPCOM_Liveblog_Entry {
 			return array();
 		}
 
-		return array_map(function( $contributor ) {
-			return self::get_user_data_for_json( get_userdata( $contributor ) );
-		}, $contributors );
+		return array_map(
+			function( $contributor ) {
+				return self::get_user_data_for_json( get_userdata( $contributor ) );
+			}, $contributors
+		);
 	}
 
 	/**
@@ -443,9 +448,9 @@ class WPCOM_Liveblog_Entry {
 
 		$avatar_size = apply_filters( 'liveblog_entry_avatar_size', self::default_avatar_size );
 		return array(
-			'id' => $user->ID,
-			'key' => strtolower($user->user_nicename),
-			'name' => $user->display_name,
+			'id'     => $user->ID,
+			'key'    => strtolower( $user->user_nicename ),
+			'name'   => $user->display_name,
 			'avatar' => get_avatar( $user->ID, $avatar_size ),
 		);
 	}

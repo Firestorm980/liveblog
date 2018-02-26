@@ -280,25 +280,25 @@ if ( ! class_exists( 'WPCOM_Liveblog' ) ) :
 			return self::$post_id;
 		}
 
-	/**
+		/**
 	 * Get current user
 	 */
-	public static function get_current_user() {
-		if ( ! self::is_liveblog_editable() ) {
-			return false;
+		public static function get_current_user() {
+			if ( ! self::is_liveblog_editable() ) {
+				return false;
+			}
+
+			$user = wp_get_current_user();
+
+			return array(
+				'id'     => $user->ID,
+				'key'    => strtolower( $user->user_nicename ),
+				'name'   => $user->display_name,
+				'avatar' => get_avatar( $user->ID, 20 ),
+			);
 		}
 
-		$user = wp_get_current_user();
-
-		return array(
-			'id' => $user->ID,
-			'key' => strtolower( $user->user_nicename ),
-			'name' => $user->display_name,
-			'avatar' => get_avatar( $user->ID, 20 ),
-		);
-	}
-
-	/**
+		/**
 	 * This is where a majority of the magic happens.
 	 *
 	 * Hooked to template_redirect, this method tries to add anything it can to
@@ -569,11 +569,11 @@ if ( ! class_exists( 'WPCOM_Liveblog' ) ) :
 
 			$crud_action = isset( $_POST['crud_action'] ) ? sanitize_text_field( wp_unslash( $_POST['crud_action'] ) ) : 0; // input var ok
 
-		$args['post_id'] = isset( $_POST['post_id'] ) ? intval( $_POST['post_id'] ) : 0;
-		$args['content'] = isset( $_POST['content'] ) ? $_POST['content'] : '';
-		$args['entry_id'] = isset( $_POST['entry_id'] ) ? intval( $_POST['entry_id'] ) : 0;
-		$args['author_id'] = isset( $_POST['author_id'] ) ? intval( $_POST['author_id'] ) : false;
-		$args['contributor_ids'] = isset( $_POST['contributor_ids'] ) ? intval( $_POST['contributor_ids'] ) : false;
+			$args['post_id']         = isset( $_POST['post_id'] ) ? intval( $_POST['post_id'] ) : 0;
+			$args['content']         = isset( $_POST['content'] ) ? $_POST['content'] : '';
+			$args['entry_id']        = isset( $_POST['entry_id'] ) ? intval( $_POST['entry_id'] ) : 0;
+			$args['author_id']       = isset( $_POST['author_id'] ) ? intval( $_POST['author_id'] ) : false;
+			$args['contributor_ids'] = isset( $_POST['contributor_ids'] ) ? intval( $_POST['contributor_ids'] ) : false;
 
 			$args['post_id']  = isset( $_POST['post_id'] ) ? intval( $_POST['post_id'] ) : 0; // input var ok
 			$args['content']  = isset( $_POST['content'] ) ? sanitize_text_field( wp_unslash( $_POST['content'] ) ) : ''; // input var ok
@@ -961,84 +961,83 @@ if ( ! class_exists( 'WPCOM_Liveblog' ) ) :
 	 *
 	 * @return If not a liveblog post
 	 */
-	public static function enqueue_scripts() {
+		public static function enqueue_scripts() {
 
-		if ( ! self::is_viewing_liveblog_post() ) {
-			return;
-		}
+			if ( ! self::is_viewing_liveblog_post() ) {
+				return;
+			}
 
-		wp_enqueue_style( self::KEY, plugins_url( 'assets/app.css', __FILE__ ) );
-		wp_enqueue_style( self::KEY . '_theme', plugins_url( 'assets/theme.css', __FILE__ ) );
-		wp_enqueue_script( self::KEY, plugins_url( 'assets/app.js', __FILE__ ), array(), self::VERSION, true );
+			wp_enqueue_style( self::KEY, plugins_url( 'assets/app.css', __FILE__ ) );
+			wp_enqueue_style( self::KEY . '_theme', plugins_url( 'assets/theme.css', __FILE__ ) );
+			wp_enqueue_script( self::KEY, plugins_url( 'assets/app.js', __FILE__ ), array(), self::VERSION, true );
 
+			if ( self::is_liveblog_editable() ) {
+				self::add_default_plupload_settings();
+			}
 
-		if ( self::is_liveblog_editable() )  {
-			self::add_default_plupload_settings();
-		}
+			wp_localize_script(
+				self::KEY, 'liveblog_settings',
+				apply_filters(
+					'liveblog_settings', array(
+						'permalink'                    => get_permalink(),
+						'post_id'                      => get_the_ID(),
+						'state'                        => self::get_liveblog_state(),
+						'is_liveblog_editable'         => self::is_liveblog_editable(),
+						'socketio_enabled'             => WPCOM_Liveblog_Socketio_Loader::is_enabled(),
 
-		wp_localize_script(
-			self::KEY, 'liveblog_settings',
-			apply_filters(
-				'liveblog_settings', array(
-					'permalink'                    => get_permalink(),
-					'post_id'                      => get_the_ID(),
-					'state'                        => self::get_liveblog_state(),
-					'is_liveblog_editable'         => self::is_liveblog_editable(),
-					'socketio_enabled'             => WPCOM_Liveblog_Socketio_Loader::is_enabled(),
+						'key'                          => self::KEY,
+						'nonce_key'                    => self::NONCE_KEY,
+						'nonce'                        => wp_create_nonce( self::NONCE_ACTION ),
+						'image_nonce'                  => wp_create_nonce( 'media-form' ),
+						'latest_entry_timestamp'       => self::$entry_query->get_latest_timestamp(),
+						'latest_entry_id'              => self::$entry_query->get_latest_id(),
+						'timestamp'                    => time(),
+						'utc_offset'                   => get_option( 'gmt_offset' ) * 60, // in minutes
+						'date_format'                  => get_option( 'date_format' ),
+						'time_format'                  => get_option( 'time_format' ),
+						'entries_per_page'             => WPCOM_Liveblog_Lazyloader::get_number_of_entries(),
 
-					'key'                          => self::KEY,
-					'nonce_key'                    => self::NONCE_KEY,
-					'nonce'                        => wp_create_nonce( self::NONCE_ACTION ),
-					'image_nonce'                  => wp_create_nonce( 'media-form' ),
-					'latest_entry_timestamp'       => self::$entry_query->get_latest_timestamp(),
-					'latest_entry_id'              => self::$entry_query->get_latest_id(),
-					'timestamp'                    => time(),
-					'utc_offset'                   => get_option( 'gmt_offset' ) * 60, // in minutes
-					'date_format'                  => get_option( 'date_format' ),
-					'time_format'                  => get_option( 'time_format' ),
-					'entries_per_page'             => WPCOM_Liveblog_Lazyloader::get_number_of_entries(),
+						'refresh_interval'             => self::get_refresh_interval(),
+						'focus_refresh_interval'       => self::FOCUS_REFRESH_INTERVAL,
+						'max_consecutive_retries'      => self::MAX_CONSECUTIVE_RETRIES,
+						'delay_threshold'              => self::DELAY_THRESHOLD,
+						'delay_multiplier'             => self::DELAY_MULTIPLIER,
+						'fade_out_duration'            => self::FADE_OUT_DURATION,
 
-					'refresh_interval'             => self::get_refresh_interval(),
-					'focus_refresh_interval'       => self::FOCUS_REFRESH_INTERVAL,
-					'max_consecutive_retries'      => self::MAX_CONSECUTIVE_RETRIES,
-					'delay_threshold'              => self::DELAY_THRESHOLD,
-					'delay_multiplier'             => self::DELAY_MULTIPLIER,
-					'fade_out_duration'            => self::FADE_OUT_DURATION,
+						'use_rest_api'                 => intval( self::use_rest_api() ),
+						'endpoint_url'                 => self::get_entries_endpoint_url(),
 
-					'use_rest_api'                 => intval( self::use_rest_api() ),
-					'endpoint_url'                 => self::get_entries_endpoint_url(),
+						'features'                     => WPCOM_Liveblog_Entry_Extend::get_enabled_features(),
+						'autocomplete'                 => WPCOM_Liveblog_Entry_Extend::get_autocomplete(),
+						'command_class'                => apply_filters( 'liveblog_command_class', WPCOM_Liveblog_Entry_Extend_Feature_Commands::$class_prefix ),
 
-					'features'                     => WPCOM_Liveblog_Entry_Extend::get_enabled_features(),
-					'autocomplete'                 => WPCOM_Liveblog_Entry_Extend::get_autocomplete(),
-					'command_class'                => apply_filters( 'liveblog_command_class', WPCOM_Liveblog_Entry_Extend_Feature_Commands::$class_prefix ),
+						// i18n
+						'delete_confirmation'          => __( 'Do you really want to delete this entry? There is no way back.', 'liveblog' ),
+						'delete_key_confirm'           => __( 'Do you want to delete this key entry?', 'liveblog' ),
+						'error_message_template'       => __( 'Error {error-code}: {error-message}', 'liveblog' ),
+						'short_error_message_template' => __( 'Error: {error-message}', 'liveblog' ),
+						'new_update'                   => __( 'Liveblog: {number} new update', 'liveblog' ),
+						'new_updates'                  => __( 'Liveblog: {number} new updates', 'liveblog' ),
+						'create_link_prompt'           => __( 'Provide URL for link:', 'liveblog' ),
 
-					// i18n
-					'delete_confirmation'          => __( 'Do you really want to delete this entry? There is no way back.', 'liveblog' ),
-					'delete_key_confirm'           => __( 'Do you want to delete this key entry?', 'liveblog' ),
-					'error_message_template'       => __( 'Error {error-code}: {error-message}', 'liveblog' ),
-					'short_error_message_template' => __( 'Error: {error-message}', 'liveblog' ),
-					'new_update'                   => __( 'Liveblog: {number} new update', 'liveblog' ),
-					'new_updates'                  => __( 'Liveblog: {number} new updates', 'liveblog' ),
-					'create_link_prompt'           => __( 'Provide URL for link:', 'liveblog' ),
-
-					// Classes
-					'class_term_prefix'            => __( 'term-', 'liveblog' ),
-					'class_alert'                  => __( 'type-alert', 'liveblog' ),
-					'class_key'                    => __( 'type-key', 'liveblog' ),
+						// Classes
+						'class_term_prefix'            => __( 'term-', 'liveblog' ),
+						'class_alert'                  => __( 'type-alert', 'liveblog' ),
+						'class_key'                    => __( 'type-key', 'liveblog' ),
+					)
 				)
-			)
-		);
+			);
 
-		wp_localize_script(
-			'liveblog-publisher', 'liveblog_publisher_settings', array(
-				'loading_preview'         => __( 'Loading preview…', 'liveblog' ),
-				'new_entry_tab_label'     => __( 'New Entry', 'liveblog' ),
-				'new_entry_submit_label'  => __( 'Publish Update', 'liveblog' ),
-				'edit_entry_tab_label'    => __( 'Edit Entry', 'liveblog' ),
-				'edit_entry_submit_label' => __( 'Update', 'liveblog' ),
-			)
-		);
-	}
+			wp_localize_script(
+				'liveblog-publisher', 'liveblog_publisher_settings', array(
+					'loading_preview'         => __( 'Loading preview…', 'liveblog' ),
+					'new_entry_tab_label'     => __( 'New Entry', 'liveblog' ),
+					'new_entry_submit_label'  => __( 'Publish Update', 'liveblog' ),
+					'edit_entry_tab_label'    => __( 'Edit Entry', 'liveblog' ),
+					'edit_entry_submit_label' => __( 'Update', 'liveblog' ),
+				)
+			);
+		}
 
 		/**
 	 * Sets up some default Plupload settings so we can upload meda theme-side
