@@ -281,6 +281,17 @@ if ( ! class_exists( 'WPCOM_Liveblog' ) ) :
 		}
 
 		/**
+	 * Returns the avatar for a user
+	 *
+	 * @param $user_id author ID
+	 * @param $size size, in pixels (or named size)
+	 * @return HTML for avatar
+	 */
+	public static function get_avatar( $user_id, $size ) {
+		return apply_filters( 'liveblog_author_avatar', get_avatar( $user_id, $size ), $user_id, $size );
+	}
+
+	/**
 	 * Get current user
 	 */
 		public static function get_current_user() {
@@ -294,7 +305,7 @@ if ( ! class_exists( 'WPCOM_Liveblog' ) ) :
 				'id'     => $user->ID,
 				'key'    => strtolower( $user->user_nicename ),
 				'name'   => $user->display_name,
-				'avatar' => get_avatar( $user->ID, 20 ),
+				'avatar' => self::get_avatar( $user->ID, 20 ),
 			);
 		}
 
