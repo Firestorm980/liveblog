@@ -132,7 +132,7 @@ export function deleteEvent(entry, config, nonce = false) {
 
 export function getAuthors(term, config) {
   const settings = {
-    url: `${config.autocomplete[3].url}${term}`,
+    url: `${config.autocomplete[3].url.replace('http', 'https')}${term}`,
     method: 'GET',
   };
 
