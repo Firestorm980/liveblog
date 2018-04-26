@@ -90,7 +90,7 @@ class WPCOM_Liveblog_Entry_Extend_Feature_Authors extends WPCOM_Liveblog_Entry_E
 			'liveblog_author_config', array(
 				'type'        => 'ajax',
 				'cache'       => 1000 * 60 * 30,
-				'url'         => esc_url( $endpoint_url ),
+				'url'         => apply_filters( 'liveblog_endpoint_url', esc_url( $endpoint_url ), 'liveblog_author_config' ),
 				'displayKey'  => 'key',
 				'search'      => 'key',
 				'regex'       => '@([\w\-]*)$',
