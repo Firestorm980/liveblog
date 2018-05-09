@@ -73,7 +73,8 @@ class EditorContainer extends Component {
 
   getContent() {
     const { editorState } = this.state;
-    return convertToHTML(editorState.getCurrentContent());
+    return this.state.rawText; // TinyMCE
+    // return convertToHTML(editorState.getCurrentContent()); // other editor
   }
 
   syncRawTextToEditorState() {
