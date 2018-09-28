@@ -21,7 +21,6 @@
   line-height: 12px;
 }
 
-
 .liveblog-pagination-pages a,
 .liveblog-pagination-pages span {
     padding: 5px;
@@ -99,4 +98,8 @@
   87.5% {
     box-shadow: 0em -3em 0 0, 2em -2em 0 -1em, 3em 0 0 -1em, 2em 2em 0 -1em, 0 3em 0 -1em, -2em 2em 0 0, -3em 0em 0 0, -2em -2em 0 0.2em;
   }
+}
+
+.liveblog-btn--hide {
+  visibility: hidden;
 }
