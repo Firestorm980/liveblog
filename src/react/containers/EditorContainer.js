@@ -5,8 +5,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
-import { Async } from 'react-select';
-import 'react-select/dist/react-select.css';
+import Select from 'react-select';
 import { html } from 'js-beautify';
 import { debounce } from 'lodash-es';
 
@@ -60,6 +59,7 @@ class EditorContainer extends Component {
       error: false,
       errorMessage: '',
       status: props.entry ? props.entry.status : 'draft',
+      users: [],
     };
 
     this.onChange = editorState => this.setState({
@@ -286,6 +286,15 @@ class EditorContainer extends Component {
       canPublish = false;
     }
 
+    const customStyles = {
+      menu: (provided) => {
+        return {
+          ...provided,
+          zIndex: 1,
+        };
+      },
+    };
+
     return (
       <div className="liveblog-editor-container">
         {!isEditing && <h1 className="liveblog-editor-title">Add New Entry</h1>}
@@ -336,15 +345,16 @@ class EditorContainer extends Component {
           />
         }
         <h2 className="liveblog-editor-subTitle">Authors:</h2>
-        <Async
-          multi={true}
+        <Select
+          isMulti={true}
           value={authors}
-          valueKey="key"
-          labelKey="name"
+          isClearable={false}
           onChange={this.onSelectAuthorChange.bind(this)}
-          optionComponent={AuthorSelectOption}
-          loadOptions={this.getUsers}
-          clearable={false}
+          getOptionLabel={option => option.name}
+          getOptionValue={option => option.key}
+          options={config.authors}
+          components={{ Option: AuthorSelectOption }}
+          styles={customStyles}
         />
 
         {(!isEditing || (isEditing && 'draft' === status)) && <button

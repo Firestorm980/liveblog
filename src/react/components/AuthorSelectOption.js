@@ -1,46 +1,48 @@
-import React, { Component } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
+import { components } from 'react-select';
 
-class AuthorSelectOption extends Component {
-  handleMouseDown(event) {
-    const { onSelect, option } = this.props;
-    event.preventDefault();
-    event.stopPropagation();
-    onSelect(option, event);
-  }
+const Children = ({ name, avatar }) => {
+  const spanStyle = {
+    alignItems: 'center',
+    display: 'flex',
+  };
+  const avatarStyle = {
+    display: 'inline-block',
+    height: '1.5em',
+    marginRight: '.25em',
+    width: '1.5em',
+  };
 
-  handleMouseEnter(event) {
-    this.props.onFocus(this.props.option, event);
-  }
+  return (
+    <span style={spanStyle}>
+      { (avatar) ? <div style={avatarStyle} dangerouslySetInnerHTML={{ __html: avatar }} /> : null }
+      { name }
+    </span>
+  );
+};
 
-  handleMouseMove(event) {
-    const { isFocused, onFocus, option } = this.props;
-    if (isFocused) return;
-    onFocus(option, event);
-  }
+const AuthorSelectOption = (props) => {
+  const propsUpdated = {
+    ...props,
+    children: <Children {...props.data} />,
+  };
 
-  render() {
-    const { className, option } = this.props;
-    return (
-      <div
-        className={`${className} liveblog-popover-item`}
-        onMouseDown={this.handleMouseDown.bind(this)}
-        onMouseEnter={this.handleMouseEnter.bind(this)}
-        onMouseMove={this.handleMouseMove.bind(this)}
-      >
-        { option.avatar && <div dangerouslySetInnerHTML={{ __html: option.avatar }} /> }
-        {option.name}
-      </div>
-    );
-  }
-}
+  return (
+    <components.Option {...propsUpdated} />
+  );
+};
 
 AuthorSelectOption.propTypes = {
-  onSelect: PropTypes.func,
-  option: PropTypes.object,
-  onFocus: PropTypes.func,
-  isFocused: PropTypes.bool,
-  className: PropTypes.string,
+  innerProps: PropTypes.object,
+  innerRef: PropTypes.object,
+  isDisabled: PropTypes.bool,
+  data: PropTypes.object,
+};
+
+Children.propTypes = {
+  name: PropTypes.string,
+  avatar: PropTypes.string,
 };
 
 export default AuthorSelectOption;
