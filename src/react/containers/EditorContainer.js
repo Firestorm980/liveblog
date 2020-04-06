@@ -287,6 +287,12 @@ class EditorContainer extends Component {
     }
 
     const customStyles = {
+      container: (provided) => {
+        return {
+          ...provided,
+          flexGrow: 1,
+        };
+      },
       menu: (provided) => {
         return {
           ...provided,
@@ -345,37 +351,39 @@ class EditorContainer extends Component {
           />
         }
         <h2 className="liveblog-editor-subTitle">Authors:</h2>
-        <Select
-          isMulti={true}
-          value={authors}
-          isClearable={false}
-          onChange={this.onSelectAuthorChange.bind(this)}
-          getOptionLabel={option => option.name}
-          getOptionValue={option => option.key}
-          options={config.authors}
-          components={{ Option: AuthorSelectOption }}
-          styles={customStyles}
-        />
+        <div className="liveblog-editor-actions">
+          <Select
+            isMulti={true}
+            value={authors}
+            isClearable={false}
+            onChange={this.onSelectAuthorChange.bind(this)}
+            getOptionLabel={option => option.name}
+            getOptionValue={option => option.key}
+            options={config.authors}
+            components={{ Option: AuthorSelectOption }}
+            styles={customStyles}
+          />
 
-        {(!isEditing || (isEditing && 'draft' === status)) && <button
-          disabled={ canPublish ? '' : 'disabled'}
-          className="button button-secondary button-large liveblog-btn liveblog-draft-btn"
-          onClick={ (event) => {
-            event.preventDefault();
-            this.publish('draft');
-          } }>
-          Save Draft
-        </button> }
+          {(!isEditing || (isEditing && 'draft' === status)) && <button
+            disabled={ canPublish ? '' : 'disabled'}
+            className="button button-secondary button-large liveblog-btn liveblog-draft-btn"
+            onClick={ (event) => {
+              event.preventDefault();
+              this.publish('draft');
+            } }>
+            Save Draft
+          </button> }
 
-        <button
-          disabled={ canPublish ? '' : 'disabled'}
-          className="button button-primary button-large liveblog-btn liveblog-publish-btn"
-          onClick={ (event) => {
-            event.preventDefault();
-            this.publish('publish');
-          } }>
-          {isEditing && 'publish' === status ? 'Update' : 'Publish'}
-        </button>
+          <button
+            disabled={ canPublish ? '' : 'disabled'}
+            className="button button-primary button-large liveblog-btn liveblog-publish-btn"
+            onClick={ (event) => {
+              event.preventDefault();
+              this.publish('publish');
+            } }>
+            {isEditing && 'publish' === status ? 'Update' : 'Publish'}
+          </button>
+        </div>
 
         {
           isEditing && <button
