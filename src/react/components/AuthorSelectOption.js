@@ -35,7 +35,7 @@ const AuthorSelectOption = (props) => {
 
 AuthorSelectOption.propTypes = {
   innerProps: PropTypes.object,
-  innerRef: PropTypes.object,
+  innerRef: PropTypes.function,
   isDisabled: PropTypes.bool,
   data: PropTypes.object,
 };
