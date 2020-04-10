@@ -92,8 +92,6 @@ class EditorContainer extends Component {
       errorMessage,
     });
 
-    this.getUsers = debounce(this.getUsers.bind(this), props.config.author_list_debounce_time);
-
     this.handleWindowClose = (e) => {
       if (props.isEditing) {
         this.close(e);
@@ -102,6 +100,7 @@ class EditorContainer extends Component {
   }
 
   componentDidMount() {
+    this.getUsers('');
     window.addEventListener('beforeunload', this.handleWindowClose);
   }
 
@@ -185,15 +184,14 @@ class EditorContainer extends Component {
     });
   }
 
-  getUsers(text, callback) {
+  getUsers(text) {
     const { config } = this.props;
     getAuthors(text, config)
       .timeout(20000)
       .map(res => res.response)
-      .subscribe(res => callback(null, {
-        options: res,
-        complete: false,
-      }));
+      .subscribe((res) => {
+        this.setState({ users: res.map(author => author) });
+      });
   }
 
   getAuthors(text) {
@@ -261,6 +259,7 @@ class EditorContainer extends Component {
       error,
       errorMessage,
       status,
+      users,
     } = this.state;
 
     let {
@@ -300,6 +299,22 @@ class EditorContainer extends Component {
         };
       },
     };
+
+    let authorsSelect = null;
+
+    if (users.length) {
+      authorsSelect = <Select
+        isMulti={true}
+        value={authors}
+        isClearable={false}
+        onChange={this.onSelectAuthorChange.bind(this)}
+        getOptionLabel={option => option.name}
+        getOptionValue={option => option.key}
+        options={users}
+        components={{ Option: AuthorSelectOption }}
+        styles={customStyles}
+      />;
+    }
 
     return (
       <div className="liveblog-editor-container">
@@ -352,17 +367,7 @@ class EditorContainer extends Component {
         }
         <h2 className="liveblog-editor-subTitle">Authors:</h2>
         <div className="liveblog-editor-actions">
-          <Select
-            isMulti={true}
-            value={authors}
-            isClearable={false}
-            onChange={this.onSelectAuthorChange.bind(this)}
-            getOptionLabel={option => option.name}
-            getOptionValue={option => option.key}
-            options={config.authors}
-            components={{ Option: AuthorSelectOption }}
-            styles={customStyles}
-          />
+          {authorsSelect}
 
           {(!isEditing || (isEditing && 'draft' === status)) && <button
             disabled={ canPublish ? '' : 'disabled'}

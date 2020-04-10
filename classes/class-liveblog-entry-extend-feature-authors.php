@@ -68,9 +68,6 @@ class Liveblog_Entry_Extend_Feature_Authors extends Liveblog_Entry_Extend_Featur
 		// Add an ajax endpoint to find the authors
 		// which is to be used on the front end.
 		add_action( 'wp_ajax_liveblog_authors', [ $this, 'ajax_authors' ] );
-
-		// Hook into settings to add authors into the object.
-		add_filter( 'liveblog_settings', [ $this, 'liveblog_settings' ] );
 	}
 
 	/**
@@ -266,25 +263,5 @@ class Liveblog_Entry_Extend_Feature_Authors extends Liveblog_Entry_Extend_Featur
 			'name'   => $author->display_name,
 			'avatar' => Liveblog::get_avatar( $author->ID, 20 ),
 		];
-	}
-
-	/**
-	 * Maps authors to the liveblog settings.
-	 *
-	 * @param array $settings The array of settings.
-	 * @return array
-	 */
-	public function liveblog_settings( $settings ) {
-
-		// Don't bother if it isn't the admin.
-		if ( ! is_admin() ) {
-			return $settings;
-		}
-
-		$term = '';
-		$users = $this->get_authors( $term );
-		$settings['authors'] = $users;
-
-		return $settings;
 	}
 }
